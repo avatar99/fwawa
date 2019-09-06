@@ -1,64 +1,55 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
-var prefix = "%"
-var adminprefix = "%"
+var prefix = "#"
+var adminprefix = "#"
 
 
 //bc
 
-client.on("message", message => {
-    if (message.content.startsWith("$obc")) {
-                 if (!message.member.hasPermission("ADMINISTRATOR"))  return;
-  let args = message.content.split(" ").slice(1);
-  var argresult = args.join(' ');
-  message.guild.members.filter(m => m.presence.status !== 'all').forEach(m => {
-  m.send(`${argresult}\n ${m}`);
-  })
-  message.channel.send(`\`${message.guild.members.filter( m => m.presence.status !== 'all').size}\`**عدد مستلمين هذه الرسالة || :mailbox:**`);
-  message.delete();
-  };
-  });
-
-
-//bc online
-
-
-  var prefix = "%";
-
-  client.on("message", message => {
-  
-              if (message.content.startsWith(prefix + "bc")) {
-                           if (!message.member.hasPermission("ADMINISTRATOR"))  return;
-    let args = message.content.split(" ").slice(1);
-    var argresult = args.join(' '); 
-    message.guild.members.filter(m => m.presence.status !== 'offline').forEach(m => {
-   m.send(`${argresult}\n ${m}`);
-  })
-   message.channel.send(`\`${message.guild.members.filter(m => m.presence.status !== 'online').size}\` :mailbox:  عدد المستلمين `); 
-   message.delete(); 
-  };     
-  });
-
 client.on('message', message => {
-    var  user = message.mentions.users.first() || message.author;
-if (message.content.startsWith("$avatar")) {
-message.channel.send(`This avatar For ${user} link : ${user.avatarURL}`);
-}
-});
-
-
-  client.on('message', message => {
-    if(!message.channel.guild) return;
-let args = message.content.split(' ').slice(1).join(' ');
-if (message.content.startsWith('$adminbc')){
-if(!message.author.id === '600369127907131412') return;
-message.channel.sendMessage('**سيتم إرسال هذه الرسالة || :white_check_mark:**')
-client.users.forEach(m =>{
-m.sendMessage(args)
-})
-}
-});
-
+  if(message.content.startsWith(prefix + 'bc')) {
+            if (!message.member.hasPermission("ADMINISTRATOR"))  return;
+  let args = message.content.split(" ").slice(1).join(" ");
+  if(!args) return message.channel.send(`**:rolling_eyes: please type the broadcast message**`)
+  let filter = m => m.author.id == message.author.id
+  let broadcastt = new Discord.RichEmbed()
+  .setColor('#36393e')
+  .addField(`**[1] broadcast for all members\n\n[2] broadcast for online members\n\n[0] to cancel**`,`** **`)
+  message.channel.send(broadcastt).then(msg => {
+  message.channel.awaitMessages(filter, {
+    max: 1,
+    time: 90000,
+    errors: ['time']
+  })
+  .then(collected => {
+    if(collected.first().content === '1') {
+      message.channel.bulkDelete(1)
+  message.channel.send(`**Broadcast begin send to \`${message.guild.members.size}\` members....**`);
+  msg.delete()
+     return message.guild.members.forEach(m => {
+  m.send(args.replace('[user]', m))
+      })
+  }
+  if(collected.first().content === '2') {
+    msg.delete()
+    message.channel.bulkDelete(1)
+    message.channel.send(`**Broadcast begin send to \`${message.guild.members.filter(m=>m.presence.status == 'online').size}\` members....**`);
+  message.guild.members.filter(m => m.presence.status === 'online').forEach(m => {
+    m.send(args.replace('[user]', m)) 
+  })
+  message.guild.members.filter(m => m.presence.status === 'dnd').forEach(m => {
+    m.send(args.replace('[user]', m)) 
+  })
+  return message.guild.members.filter(m => m.presence.status === 'idle').forEach(m => {
+    m.send(args.replace('[user]', m)) 
+  })
+    }
+  if(collected.first().content === '0') {
+    message.channel.bulkDelete(1)
+    msg.delete()
+    return message.channel.send(`**Broadcast Has Been Canseled**`);
+  }})})}
+  });
 
 const developers = ["600369127907131412","id"]
 client.on('message', message => {
